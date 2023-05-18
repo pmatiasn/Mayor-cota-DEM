@@ -1,0 +1,42 @@
+# Librerías requeridas para el proceso
+
+import rasterio
+import geopandas as gpd
+import geojson
+from shapely.geometry import Point
+
+# Función para obtener el punto de mayor altura
+
+def obtener_punto_mayor_altura(elevation_file):
+    dataset = rasterio.open(elevation_file)
+    elev_data = dataset.read(1)
+    idx = elev_data.argmax()
+    row, col = divmod(idx, dataset.width)
+    lon, lat = dataset.xy(row, col)
+    cota = float(elev_data[row, col])  # Convertir el valor de la cota a tipo float
+    punto = Point(lon, lat)
+    return punto, cota
+
+# Función para guardar el punto en un GeoJSON
+
+def guardar_punto_como_geojson(punto, cota, output_geojson):
+    feature = geojson.Feature(geometry=punto, properties={'cota': cota})
+    with open(output_geojson, 'w') as f:
+        geojson.dump(feature, f, ensure_ascii=False)  # Evitar problemas de codificación
+    print("El archivo GeoJSON se ha creado exitosamente.")
+
+# Ruta del archivo de elevación en formato de imagen (.img)
+
+elevation_file = "Ruta"
+
+# Ruta de salida del archivo GeoJSON
+
+output_geojson = "Ruta"
+
+# Obtener el punto de mayor altura y la cota
+
+punto_mayor_altura, cota = obtener_punto_mayor_altura(elevation_file)
+
+# Guardar el punto como un archivo GeoJSON
+
+guardar_punto_como_geojson(punto_mayor_altura, cota, output_geojson)
